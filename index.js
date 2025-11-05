@@ -1,5 +1,6 @@
 let tasks = [];
-const pad2 = n => String(n).padStart(2, "0");
+const convertDate = data => String(data).padStart(2, "0");
+const date = new Date();
 
 let completedTasks = []
 let completedTaskCount = 0;
@@ -9,19 +10,18 @@ function showTasks() {
     console.log("Задача отсутствует")
   } else {
     for(let task of tasks) {
-      console.log(`Задача: "${task.title}", описание: ${task.description}, done: ${task.isCompleted}, дата начала: ${task.createdDate}`)
+      console.log(`Задача: "${task.title}", описание: ${task.description}, done: ${task.isCompleted}, дата начала: ${task.createdDate}, дата окончания: ${task.completedDate}`)
     }
   }
 }
 
-function setTask(taskDescription) {
-  let date = new Date();
+function setTask(taskTitle, taskDescription) {
   const newTask = {
-    title: taskDescription.trim(),
-    description: '-',
+    title: taskTitle.trim(),
+    description: taskDescription.trim(),
     isCompleted: false,
-    createdDate: `${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${date.getFullYear()}`,
-    completedDate: '',
+    createdDate: `${convertDate(date.getDate())}.${convertDate(date.getMonth() + 1)}.${date.getFullYear()}`,
+    completedDate: 'В разработке',
   };
   if(newTask.title === "") {
     console.log('Заполните название задачи!')
@@ -43,12 +43,12 @@ function completeTask(index) {
 
   let date = new Date();
 
-  for(let i = index; i < tasks.length; i++) {
-    tasks[i] = tasks[i + 1];
-  }
-  tasks.pop();
+  // for(let i = index; i < tasks.length; i++) {
+  //   tasks[i] = tasks[i + 1];
+  // }
+  // tasks.pop();
   taskDone.isCompleted = true;
-  taskDone.completedDate = `${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${date.getFullYear()}`;
+  taskDone.completedDate = `${convertDate(date.getDate())}.${convertDate(date.getMonth() + 1)}.${date.getFullYear()}`;
   completedTasks.push(taskDone);
   completedTaskCount++;
   console.log(`Задача "${taskDone.title}" выполнена!`)
@@ -79,3 +79,69 @@ function clearTasks() {
   tasks = [];
 }
 
+function getTasksDescriptions() {
+  return tasks.map(task => task.description);
+}
+
+function getLongTasks() {
+  return tasks.filter(task => task.title.length > 10 || task.description.length > 10);
+}
+
+function isValidDateFormat(dateStr) {
+  const regex = /^\d{2}\.\d{2}\.\d{4}$/;
+  if (!regex.test(dateStr)) return false;
+
+  const [day, month, year] = dateStr.split('.').map(Number);
+
+  const date = new Date(year, month - 1, day);
+  if ( date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    return false;
+  }
+
+  return true;
+}
+
+function compareFormatDate(date) {
+  if(typeof date !== 'string') return null;
+  const [day, month, year] = date.split('.').map(Number);
+  return year * 10000 + month * 100 + day;
+}
+
+
+function getTasksByDateRange(startDate, endDate, isCompleted) {
+
+  if(startDate && !isValidDateFormat(startDate)) {
+    console.log('Некорректный формат начальной даты. Укажите формат ДД.ММ.ГГГГ')
+    return []
+  }
+  if(endDate && !isValidDateFormat(endDate)) {
+    console.log('Некорректный формат конечной даты. Укажите формат ДД.ММ.ГГГГ')
+    return []
+  }
+
+  const createdCompare = compareFormatDate(startDate);
+  const completedCompare = compareFormatDate(endDate);
+
+  return tasks.filter(task => {
+    // console.log(compareFormatDate(task.createdDate))
+    // console.log(startDateCompare)
+    if (startDate && compareFormatDate(task.createdDate) < createdCompare) return false;
+    if (endDate && (!isValidDateFormat(task.completedDate) || compareFormatDate(task.completedDate) > completedCompare)) return false;
+
+    if(isCompleted === true) return task.isCompleted === true;
+    if(isCompleted === false) return task.isCompleted === false;
+
+    return true
+  });
+}
+
+
+setTask('Доделать таскменеджер', 'Реализовать, применяя полученные знания');
+setTask('Сходить в аптеку', 'Одеться тепло, на улице дождь');
+setTask('Пи пи', 'Пу пу');
+setTask('Сильно захардворкать', 'Не помереть');
+completeTask(1);
+showTasks()
+// console.log(getTasksDescriptions())
+// console.log(getLongTasks())
+console.log(getTasksByDateRange(null, null, false));
