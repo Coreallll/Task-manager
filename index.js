@@ -6,13 +6,19 @@ let completedTasks = []
 let completedTaskCount = 0;
 
 function showTasks() {
-  if(tasks.length < 1) {
-    console.log("Задача отсутствует")
-  } else {
-    for(let task of tasks) {
-      console.log(`Задача: "${task.title}", описание: ${task.description}, done: ${task.isCompleted}, дата начала: ${task.createdDate}, дата окончания: ${task.completedDate}`)
-    }
+  if(tasks.length === 0) {
+    console.log("Задачи отсутствуют");
+    return;
   }
+
+  tasks.forEach(task => {
+    console.log(`
+    Задача: "${task.title}", 
+    Описание: ${task.description}, 
+    Done: ${task.isCompleted}, 
+    Дата начала: ${task.createdDate}, 
+    Дата окончания: ${task.completedDate}`)
+  });
 }
 
 function setTask(taskTitle, taskDescription) {
@@ -31,27 +37,27 @@ function setTask(taskTitle, taskDescription) {
 }
 
 function completeTask(index) {
+  const taskDone = tasks[index];
+  let date = new Date();
+
   if (index < 0 || index >= tasks.length) {
     console.log("Некорректный индекс, попробуйте выбрать другой");
     return;
   }
-  const taskDone = tasks[index];
+
   if(taskDone.isCompleted === true) {
     console.log(`Задача "${taskDone.title}" уже выполнена, выберите другую задачу.`)
     return;
   }
 
-  let date = new Date();
-
-  // for(let i = index; i < tasks.length; i++) {
-  //   tasks[i] = tasks[i + 1];
-  // }
-  // tasks.pop();
   taskDone.isCompleted = true;
   taskDone.completedDate = `${convertDate(date.getDate())}.${convertDate(date.getMonth() + 1)}.${date.getFullYear()}`;
   completedTasks.push(taskDone);
   completedTaskCount++;
-  console.log(`Задача "${taskDone.title}" выполнена!`)
+
+  console.log(`Задача "${taskDone.title}" выполнена!`);
+
+  return completedTasks;
 }
 
 function deleteTask(index) {
@@ -60,19 +66,19 @@ function deleteTask(index) {
     return;
   }
 
-  const deletedTask = tasks[index];
-  let ok = confirm(`Задача "${deletedTask.title}" ещё не выполнена. Удалить?`);
+  const chosenTask = tasks[index];
+  let ok = confirm(`Задача "${chosenTask.title}" ещё не выполнена. Удалить?`);
 
   if(!ok) {
     console.log("Удаление отменено");
     return;
   }
 
-  for(let i = index; i < tasks.length - 1; i++) {
-    tasks[i] = tasks[i + 1];
-  }
-  tasks.pop();
-  console.log(`Задача "${deletedTask.title}" была удалена.`)
+  const deletedTask = tasks.splice(index, 1);
+
+  console.log(`Задача "${chosenTask.title}" была удалена.`)
+
+  return tasks;
 }
 
 function clearTasks() {
@@ -107,7 +113,6 @@ function compareFormatDate(date) {
   return year * 10000 + month * 100 + day;
 }
 
-
 function getTasksByDateRange(startDate, endDate, isCompleted) {
 
   if(startDate && !isValidDateFormat(startDate)) {
@@ -123,8 +128,6 @@ function getTasksByDateRange(startDate, endDate, isCompleted) {
   const completedCompare = compareFormatDate(endDate);
 
   return tasks.filter(task => {
-    // console.log(compareFormatDate(task.createdDate))
-    // console.log(startDateCompare)
     if (startDate && compareFormatDate(task.createdDate) < createdCompare) return false;
     if (endDate && (!isValidDateFormat(task.completedDate) || compareFormatDate(task.completedDate) > completedCompare)) return false;
 
@@ -135,13 +138,32 @@ function getTasksByDateRange(startDate, endDate, isCompleted) {
   });
 }
 
+function clearShortTasks() {
+  return tasks.filter(task => task.title.length >= 5);
+}
 
-setTask('Доделать таскменеджер', 'Реализовать, применяя полученные знания');
-setTask('Сходить в аптеку', 'Одеться тепло, на улице дождь');
-setTask('Пи пи', 'Пу пу');
-setTask('Сильно захардворкать', 'Не помереть');
-completeTask(1);
-showTasks()
+function refreshTitle(index, newTitle) {
+  if(!tasks.length) {
+    console.log("Список задач пуст");
+    return;
+  }
+  const refreshedTitle = tasks[index].title = newTitle;
+
+  return tasks;
+}
+
+
+
+// setTask('Доделать таскменеджер', 'Реализовать, применяя полученные знания');
+// setTask('Сходить в аптеку', 'Одеться тепло, на улице дождь');
+// setTask('Пи пи', 'Пу пу');
+// setTask('Сильно захардворкать', 'Не помереть');
+// setTask('Фыв', 'Фув');
+// refreshTitle(1, "Постирать одежду")
+// console.log(deleteTask(3))
+// completeTask(1);
+// showTasks()
 // console.log(getTasksDescriptions())
 // console.log(getLongTasks())
-console.log(getTasksByDateRange(null, null, false));
+// console.log(getTasksByDateRange(null, null, false));
+// console.log(clearShortTasks())
