@@ -22,6 +22,10 @@ function showTasks() {
 }
 
 function setTask(taskTitle, taskDescription) {
+  if(taskTitle === "") {
+    console.log('Заполните название задачи!');
+    return;
+  }
   const newTask = {
     title: taskTitle.trim(),
     description: taskDescription.trim(),
@@ -29,9 +33,7 @@ function setTask(taskTitle, taskDescription) {
     createdDate: `${convertDate(date.getDate())}.${convertDate(date.getMonth() + 1)}.${date.getFullYear()}`,
     completedDate: 'В разработке',
   };
-  if(newTask.title === "") {
-    console.log('Заполните название задачи!')
-  }
+
   tasks.push(newTask);
   console.log(`Добавлена новая задача "${newTask.title}"`);
 }
@@ -82,7 +84,7 @@ function deleteTask(index) {
 }
 
 function clearTasks() {
-  tasks = [];
+  tasks.length = 0;
 }
 
 function getTasksDescriptions() {
